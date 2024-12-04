@@ -1,0 +1,7 @@
+{
+  "graphviz_program_path": "C:\\Program Files\\Graphviz\\bin\\dot.exe",
+  "package_name": "org.apache.commons:commons-lang3:3.12.0",
+  "output_file_path": "C:\\Users\\dasha\\Desktop\\Dasha_konf#2\\Dasha_konf#2\\dependency_graph",
+  "max_depth": 3,
+  "repository_url": "https://repo1.maven.org/maven2"
+}

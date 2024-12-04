@@ -1,0 +1,3 @@
+# Стартовый скрипт
+touch startup_file.txt
+ls

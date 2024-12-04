@@ -1,0 +1,199 @@
+import os
+import csv
+import zipfile
+import logging
+import shlex
+import atexit
+
+# Чтение конфигурационного файла
+def read_config(config_file):
+    config = {}
+    with open(config_file, 'r', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            if row:  # Игнорируем пустые строки
+                key, value = row
+                config[key.strip()] = value.strip()
+    return config
+
+config = read_config('config.csv')
+vfs_path = config.get('vfs_path')
+log_path = config.get('log_path')
+startup_script_path = config.get('startup_script_path')
+
+# Настройка логирования
+logging.basicConfig(
+    filename=log_path,
+    level=logging.INFO,
+    format='%(asctime)s,%(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+def log_action(action):
+    logging.info(action)
+
+# Открытие zip-файла виртуальной файловой системы
+vfs_zip = zipfile.ZipFile(vfs_path, 'r')
+
+# Закрытие zip-файла при выходе из программы
+@atexit.register
+def close_resources():
+    vfs_zip.close()
+
+# Множество созданных файлов во время сеанса
+created_files = set()
+
+# Функция ls
+def ls_command(current_dir):
+    contents = set()
+    # Список содержимого из zip-файла
+    for file_info in vfs_zip.infolist():
+        if file_info.filename.startswith(current_dir.lstrip('/')):
+            relative_path = file_info.filename[len(current_dir.lstrip('/')):].strip('/')
+            if '/' not in relative_path and relative_path:
+                contents.add(relative_path)
+    # Включаем созданные файлы
+    for file in created_files:
+        if file.startswith(current_dir) and file != current_dir:
+            relative_path = file[len(current_dir):].strip('/')
+            if '/' not in relative_path and relative_path:
+                contents.add(relative_path)
+    # Отображаем содержимое
+    for item in sorted(contents):
+        print(item)
+    log_action(f'ls {current_dir}')
+
+# Функция cd
+def cd_command(current_dir, path):
+    new_dir = os.path.normpath(os.path.join(current_dir, path))
+    if not new_dir.startswith('/'):
+        new_dir = '/' + new_dir
+    # Проверяем, существует ли новая директория
+    dir_exists = False
+    # Проверяем в созданных файлах и папках
+    for file in created_files:
+        if file.startswith(new_dir):
+            dir_exists = True
+            break
+    # Проверяем в архиве
+    if not dir_exists:
+        for file_info in vfs_zip.infolist():
+            if file_info.filename.startswith(new_dir.lstrip('/')):
+                dir_exists = True
+                break
+    if dir_exists:
+        log_action(f'cd {path}')
+        return new_dir
+    else:
+        print(f'cd: {path}: Нет такого файла или директории')
+        return current_dir
+
+# Функция exit
+def exit_command():
+    print("Выход из эмулятора оболочки.")
+    log_action('exit')
+    vfs_zip.close()
+    exit()
+
+# Функция find
+def find_command(current_dir, filename):
+    matches = []
+    # Поиск в zip-архиве
+    for file_info in vfs_zip.infolist():
+        if filename in os.path.basename(file_info.filename):
+            full_path = '/' + file_info.filename
+            if full_path.startswith(current_dir):
+                matches.append(full_path)
+    # Поиск в созданных файлах
+    for file in created_files:
+        if filename in os.path.basename(file) and file.startswith(current_dir):
+            matches.append(file)
+    # Отображаем результаты
+    for match in matches:
+        print(match)
+    log_action(f'find {filename}')
+
+# Функция touch
+def touch_command(current_dir, filename):
+    filepath = os.path.normpath(os.path.join(current_dir, filename))
+    if not filepath.startswith('/'):
+        filepath = '/' + filepath
+    created_files.add(filepath)
+    print(f'Создан файл {filepath}')
+    log_action(f'touch {filepath}')
+
+# Функция cat
+def cat_command(current_dir, filename):
+    filepath = os.path.normpath(os.path.join(current_dir, filename))
+    if not filepath.startswith('/'):
+        filepath = '/' + filepath
+    try:
+        if filepath in created_files:
+            print('')  # Пустое содержимое для созданных файлов
+        else:
+            with vfs_zip.open(filepath.lstrip('/')) as f:
+                content = f.read().decode('utf-8')
+                print(content)
+        log_action(f'cat {filepath}')
+    except KeyError:
+        print(f'cat: {filename}: Нет такого файла или директории')
+
+# Разбор и выполнение команд
+def parse_and_execute(command_line, current_dir):
+    args = shlex.split(command_line)
+    if not args:
+        return current_dir  # Команда не введена
+    cmd = args[0]
+    if cmd == 'exit':
+        exit_command()
+    elif cmd == 'ls':
+        ls_command(current_dir)
+    elif cmd == 'cd':
+        if len(args) > 1:
+            current_dir = cd_command(current_dir, args[1])
+        else:
+            current_dir = cd_command(current_dir, '/')
+    elif cmd == 'find':
+        if len(args) > 1:
+            find_command(current_dir, args[1])
+        else:
+            print("find: отсутствует операнд")
+    elif cmd == 'touch':
+        if len(args) > 1:
+            touch_command(current_dir, args[1])
+        else:
+            print("touch: отсутствует операнд")
+    elif cmd == 'cat':
+        if len(args) > 1:
+            cat_command(current_dir, args[1])
+        else:
+            print("cat: отсутствует операнд")
+    else:
+        print(f'{cmd}: команда не найдена')
+    return current_dir
+
+# Выполнение стартового скрипта
+def execute_startup_script(current_dir):
+    try:
+        with open(startup_script_path, 'r', encoding='utf-8') as script_file:
+            for line in script_file:
+                command_line = line.strip()
+                if command_line and not command_line.startswith('#'):
+                    print(f'startup> {command_line}')
+                    current_dir = parse_and_execute(command_line, current_dir)
+    except FileNotFoundError:
+        print(f'Стартовый скрипт не найден: {startup_script_path}')
+
+# Основной цикл
+def main():
+    current_dir = '/'
+    execute_startup_script(current_dir)
+    try:
+        while True:
+            command_line = input(f'shell:{current_dir}$ ')
+            current_dir = parse_and_execute(command_line, current_dir)
+    except KeyboardInterrupt:
+        exit_command()
+
+if __name__ == '__main__':
+    main()

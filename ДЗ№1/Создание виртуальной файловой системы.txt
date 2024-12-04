@@ -1,0 +1,5 @@
+mkdir -p virtual_fs/dir1/dir2
+echo "Содержимое файла 1" > virtual_fs/file1.txt
+echo "Содержимое файла 2" > virtual_fs/dir1/file2.txt
+echo "Содержимое файла 3" > virtual_fs/dir1/dir2/file3.txt
+zip -r0 virtual_fs.zip virtual_fs/

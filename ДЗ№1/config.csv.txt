@@ -1,0 +1,3 @@
+vfs_path,virtual_fs.zip
+log_path,log.csv
+startup_script_path,startup_script.sh
