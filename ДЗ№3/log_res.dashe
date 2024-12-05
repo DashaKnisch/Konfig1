@@ -1,0 +1,10 @@
+{{!-- Конфигурация приложения для логгирования --}}
+
+var logger_path = @"/project/lib/logger.py"
+
+var logger_lever = @"DEBUG"
+
+var logging_app = @"tenzirApplication"
+
+var all_levels = ({ 0.0, 1.0, 2.0, 3.0, 4.0 })
+

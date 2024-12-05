@@ -1,0 +1,17 @@
+<root>
+    <comm1 type="comment">Конфигурация приложения для логгирования</comm1>
+
+    <logger_path type="string">/project/lib/logger.py</logger_path>
+    
+    <logger_lever type="string">DEBUG</logger_lever>
+    
+    <logging_app type="string">tenzirApplication</logging_app>
+    
+    <all_levels type="list">
+        <item type="float">0</item>
+        <item type="float">1</item>
+        <item type="float">2</item>
+        <item type="float">3</item>
+        <item type="float">4</item>
+    </all_levels>
+</root>

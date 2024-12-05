@@ -1,0 +1,17 @@
+<root>
+    <a type="float">1</a>
+    
+    <b type="string">asd</b>
+    
+    <d type="string">example</d>
+    
+    <c type="list">
+        <item type="float">1</item>
+        <item type="float">2</item>
+        <item type="float">3</item>
+    </c>
+
+    <h type="string">a+1</h>
+
+    <comm1 type="comment">это комментарий</comm1>
+</root>

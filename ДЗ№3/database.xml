@@ -1,0 +1,16 @@
+<root>
+    <comm1 type="comment">Конфигурация базы данных</comm1>
+
+    <db_host type="string">http://localhost:8000/</db_host>
+    
+    <db_user type="string">admin@123</db_user>
+    
+    <db_password type="string">sha256sdajf_fasdj9</db_password>
+    
+    <db_accesses type="list">
+        <item type="float">0</item>
+        <item type="float">10</item>
+        <item type="float">20</item>
+        <item type="float">30</item>
+    </db_accesses>
+</root>

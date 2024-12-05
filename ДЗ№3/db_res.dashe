@@ -1,0 +1,10 @@
+{{!-- Конфигурация базы данных --}}
+
+var db_host = @"http://localhost:8000/"
+
+var db_user = @"admin@123"
+
+var db_password = @"sha256sdajf_fasdj9"
+
+var db_accesses = ({ 0.0, 10.0, 20.0, 30.0 })
+
