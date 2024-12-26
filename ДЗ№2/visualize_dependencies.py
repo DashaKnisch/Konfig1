@@ -22,7 +22,6 @@ def download_pom(repository_url, groupId, artifactId, version):
             pom_data = response.read()
         return pom_data
     except Exception as e:
-        # Здесь можно убрать вывод ошибки или изменить его на предупреждение
         # print(f"Ошибка при загрузке POM-файла по адресу {pom_url}: {e}")
         return None
 
