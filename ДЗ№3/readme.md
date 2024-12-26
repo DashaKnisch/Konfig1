@@ -51,3 +51,7 @@
 Пример конфигурации из различных предметных областей: Конфигурация логирования (logger), Конфигурация базы данных (database), Общая конфигурация приложения (asd).
 
 # Результаты тестирования:
+![Alt text](img/test1.png "asd.kate(1)")
+![Alt text](img/test2.png "asd.kate(1)")
+![Alt text](img/test3.png "asd.kate(1)")
+![Alt text](img/result3.png "asd.kate(1)")
